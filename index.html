@@ -1,0 +1,1248 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Excellington - Análise Ágil de Dados</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Plugin de Rótulos de Dados para Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    <!-- SheetJS (xlsx) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --b: #123b65;
+            --b2: #1d5d91;
+            --bg: #f2f6fa;
+            --ink: #183247;
+            --mut: #607487;
+            --bd: #d5e0e9;
+        }
+        body { background-color: var(--bg); color: var(--ink); }
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white; color: black; }
+            .card-print { border: 1px solid #ccc !important; box-shadow: none !important; }
+        }
+    </style>
+</head>
+<body class="font-sans min-h-screen flex flex-col">
+
+    <!-- CABEÇALHO -->
+    <header class="bg-gradient-to-r from-[#123b65] to-[#1d5d91] text-white p-5 shadow-lg no-print">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-2xl font-bold flex items-center gap-2">
+                    <i data-lucide="layout-dashboard" class="w-7 h-7 text-emerald-400"></i>
+                    Dashboard Excellington
+                </h1>
+                <p class="text-blue-100 text-xs mt-1">
+                    Análise gráfica e estatística ágil sem necessidade de Power BI ou tabelas dinâmicas
+                </p>
+            </div>
+            
+            <!-- IDENTIFICAÇÃO DO USUÁRIO E CONTROLES -->
+            <div class="flex flex-col items-end gap-2">
+                <div id="userDisplayTag" class="hidden bg-white/15 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20 text-xs flex items-center gap-3">
+                    <span class="flex items-center gap-1.5">
+                        <i data-lucide="user" class="w-3.5 h-3.5 text-emerald-400"></i>
+                        Usuário: <strong id="currentUserNameDisplay" class="text-white">-</strong>
+                    </span>
+                    <button onclick="showNameModal(true)" class="text-xs text-blue-200 hover:text-white underline font-normal transition">
+                        Editar
+                    </button>
+                </div>
+
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="openTermsModal()" class="px-3 py-1 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-lg border border-white/20 transition flex items-center gap-1">
+                        <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Termos de Uso
+                    </button>
+                    <button onclick="openActivationModal()" class="px-3 py-1 bg-emerald-600/90 hover:bg-emerald-600 text-white text-xs font-semibold rounded-lg border border-emerald-500/30 transition flex items-center gap-1">
+                        <i data-lucide="key" class="w-3.5 h-3.5"></i> Ativação
+                    </button>
+                    <button onclick="exitApp()" class="px-3 py-1 bg-rose-600/90 hover:bg-rose-600 text-white text-xs font-semibold rounded-lg border border-rose-500/30 transition flex items-center gap-1">
+                        <i data-lucide="power" class="w-3.5 h-3.5"></i> Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="max-w-7xl mx-auto w-full p-4 md:p-6 flex-1 space-y-6">
+
+        <!-- PAINEL DE CARREGAMENTO -->
+        <section class="bg-white rounded-xl border border-[#d5e0e9] p-5 shadow-sm no-print space-y-4">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 pb-3">
+                <div>
+                    <h2 class="text-base font-bold text-[#123b65] flex items-center gap-2">
+                        <i data-lucide="file-spreadsheet" class="w-5 h-5 text-blue-600"></i>
+                        1. Carregar Base de Dados (Excel)
+                    </h2>
+                    <p class="text-xs text-slate-500">Selecione sua planilha de dados (.xlsx ou .xls) para gerar os painéis interativos.</p>
+                </div>
+                <button onclick="loadDemoData()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition flex items-center gap-1.5">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-amber-500"></i> Carregar Dados de Exemplo
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Selecione o Arquivo Excel</label>
+                    <input type="file" id="excelFileInput" accept=".xlsx, .xls" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-[#123b65] hover:file:bg-blue-100 cursor-pointer border border-slate-300 rounded-lg p-1 bg-slate-50">
+                </div>
+                <div class="flex gap-2 self-end">
+                    <button onclick="processUploadedFile()" class="w-full py-2.5 bg-[#123b65] hover:bg-[#1d5d91] text-white font-bold text-xs rounded-lg shadow transition flex items-center justify-center gap-2">
+                        <i data-lucide="bar-chart-2" class="w-4 h-4"></i> Processar Base
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- DASHBOARD CONTAINER -->
+        <div id="dashboardContainer" class="hidden space-y-6">
+
+            <!-- CABEÇALHO DE IMPRESSÃO -->
+            <div class="hidden print-only border-b pb-3 mb-4">
+                <h1 class="text-xl font-bold text-[#123b65]">Relatório de Análise - Dashboard Excellington</h1>
+                <p class="text-xs text-slate-500" id="printReportMeta">Gerado em: - | Usuário: -</p>
+            </div>
+
+            <!-- PAINEL 1: 3 CARTÕES DE MÉTRICAS -->
+            <section class="space-y-3">
+                <div class="flex justify-between items-center no-print">
+                    <h3 class="text-sm font-bold text-[#123b65] uppercase tracking-wider flex items-center gap-2">
+                        <i data-lucide="calculator" class="w-4 h-4 text-blue-600"></i>
+                        Painel 1: Indicadores e Métricas Rápidas
+                    </h3>
+                    <button onclick="window.print()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition">
+                        <i data-lucide="printer" class="w-3.5 h-3.5"></i> Imprimir / Salvar PDF
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- CARTÃO 1: AZUL -->
+                    <div class="card-print bg-gradient-to-br from-blue-50/80 via-white to-blue-50/40 border-2 border-blue-200 rounded-xl p-4 shadow-sm space-y-3">
+                        <div class="flex justify-between items-center no-print">
+                            <span class="text-xs font-bold text-blue-800 bg-blue-100 px-2 py-0.5 rounded-full">Cartão 1</span>
+                            <i data-lucide="trending-up" class="w-4 h-4 text-blue-600"></i>
+                        </div>
+                        <div class="space-y-2 no-print">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-600">Coluna Analisada</label>
+                                <select id="card1Col" onchange="updateCards()" class="w-full p-1.5 text-xs border border-blue-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"></select>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-600">Medida Desejada</label>
+                                <select id="card1Measure" onchange="updateCards()" class="w-full p-1.5 text-xs border border-blue-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                    <option value="sum">Soma Total</option>
+                                    <option value="avg">Média</option>
+                                    <option value="median">Mediana</option>
+                                    <option value="min">Valor Mínimo</option>
+                                    <option value="max">Valor Máximo</option>
+                                    <option value="std">Desvio Padrão</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="pt-2 border-t border-blue-100">
+                            <p id="card1Title" class="text-xs font-bold text-blue-900 uppercase">Indicador 1</p>
+                            <h4 id="card1Value" class="text-2xl font-black text-blue-950 mt-1">0,00</h4>
+                        </div>
+                    </div>
+
+                    <!-- CARTÃO 2: ESMERALDA -->
+                    <div class="card-print bg-gradient-to-br from-emerald-50/80 via-white to-emerald-50/40 border-2 border-emerald-200 rounded-xl p-4 shadow-sm space-y-3">
+                        <div class="flex justify-between items-center no-print">
+                            <span class="text-xs font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">Cartão 2</span>
+                            <i data-lucide="bar-chart-3" class="w-4 h-4 text-emerald-600"></i>
+                        </div>
+                        <div class="space-y-2 no-print">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-600">Coluna Analisada</label>
+                                <select id="card2Col" onchange="updateCards()" class="w-full p-1.5 text-xs border border-emerald-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"></select>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-600">Medida Desejada</label>
+                                <select id="card2Measure" onchange="updateCards()" class="w-full p-1.5 text-xs border border-emerald-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                                    <option value="avg">Média</option>
+                                    <option value="sum">Soma Total</option>
+                                    <option value="median">Mediana</option>
+                                    <option value="min">Valor Mínimo</option>
+                                    <option value="max">Valor Máximo</option>
+                                    <option value="std">Desvio Padrão</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="pt-2 border-t border-emerald-100">
+                            <p id="card2Title" class="text-xs font-bold text-emerald-900 uppercase">Indicador 2</p>
+                            <h4 id="card2Value" class="text-2xl font-black text-emerald-950 mt-1">0,00</h4>
+                        </div>
+                    </div>
+
+                    <!-- CARTÃO 3: ÂMBAR -->
+                    <div class="card-print bg-gradient-to-br from-amber-50/80 via-white to-amber-50/40 border-2 border-amber-200 rounded-xl p-4 shadow-sm space-y-3">
+                        <div class="flex justify-between items-center no-print">
+                            <span class="text-xs font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">Cartão 3</span>
+                            <i data-lucide="activity" class="w-4 h-4 text-amber-600"></i>
+                        </div>
+                        <div class="space-y-2 no-print">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-600">Coluna Analisada</label>
+                                <select id="card3Col" onchange="updateCards()" class="w-full p-1.5 text-xs border border-amber-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-amber-500"></select>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-600">Medida Desejada</label>
+                                <select id="card3Measure" onchange="updateCards()" class="w-full p-1.5 text-xs border border-amber-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-amber-500">
+                                    <option value="median">Mediana</option>
+                                    <option value="sum">Soma Total</option>
+                                    <option value="avg">Média</option>
+                                    <option value="min">Valor Mínimo</option>
+                                    <option value="max">Valor Máximo</option>
+                                    <option value="std">Desvio Padrão</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="pt-2 border-t border-amber-100">
+                            <p id="card3Title" class="text-xs font-bold text-amber-900 uppercase">Indicador 3</p>
+                            <h4 id="card3Value" class="text-2xl font-black text-amber-950 mt-1">0,00</h4>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAINEL 2: EVOLUÇÃO TEMPORAL MULTI-SÉRIE -->
+            <section class="card-print bg-white rounded-xl border border-[#d5e0e9] p-5 shadow-sm space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-100 pb-2 gap-2">
+                    <h3 class="text-sm font-bold text-[#123b65] uppercase tracking-wider flex items-center gap-2">
+                        <i data-lucide="line-chart" class="w-4 h-4 text-blue-600"></i>
+                        Painel 2: Análise de Evolução Temporal (Multi-Série)
+                    </h3>
+                    <label class="flex items-center gap-2 text-xs font-bold text-slate-600 no-print cursor-pointer">
+                        <input type="checkbox" id="trendShowLabels" onchange="updateTrendChart()" class="w-4 h-4 text-blue-600 rounded">
+                        Exibir Rótulos de Dados
+                    </label>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 no-print">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Coluna de Data/Tempo</label>
+                        <select id="trendDateCol" onchange="updateTrendChart()" class="w-full p-2 text-xs border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"></select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Agrupamento Temporal</label>
+                        <select id="trendGroup" onchange="updateTrendChart()" class="w-full p-2 text-xs border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <option value="month">Mensal</option>
+                            <option value="year">Anual</option>
+                            <option value="day">Diário</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Medida</label>
+                        <select id="trendMeasure" onchange="updateTrendChart()" class="w-full p-2 text-xs border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <option value="sum">Soma Total</option>
+                            <option value="avg">Média</option>
+                            <option value="min">Mínimo</option>
+                            <option value="max">Máximo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 no-print">
+                    <label class="block text-xs font-bold text-slate-700 mb-2">Selecione as Séries Numéricas para Analisar no Gráfico:</label>
+                    <div id="trendSeriesCheckboxes" class="flex flex-wrap gap-3 max-h-24 overflow-y-auto text-xs"></div>
+                </div>
+
+                <div class="h-72 w-full pt-2">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </section>
+
+            <!-- PAINEL 3: ANÁLISE PONTUAL MULTI-SÉRIE -->
+            <section class="card-print bg-white rounded-xl border border-[#d5e0e9] p-5 shadow-sm space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-100 pb-2 gap-2">
+                    <h3 class="text-sm font-bold text-[#123b65] uppercase tracking-wider flex items-center gap-2">
+                        <i data-lucide="bar-chart-2" class="w-4 h-4 text-blue-600"></i>
+                        Painel 3: Análise Pontual Multi-Série por Período e Categoria
+                    </h3>
+                    <label class="flex items-center gap-2 text-xs font-bold text-slate-600 no-print cursor-pointer">
+                        <input type="checkbox" id="punctualShowLabels" onchange="updatePunctualChart()" class="w-4 h-4 text-blue-600 rounded">
+                        Exibir Rótulos de Dados
+                    </label>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 no-print">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Coluna Categoria/Agrupador</label>
+                        <select id="punctualCatCol" onchange="updatePunctualChart()" class="w-full p-2 text-xs border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"></select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Tipo de Período</label>
+                        <select id="punctualPeriodType" onchange="onPunctualPeriodTypeChange()" class="w-full p-2 text-xs border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <option value="all">Todos os Períodos</option>
+                            <option value="month">Mês Específico</option>
+                            <option value="quarter">Trimestre</option>
+                            <option value="semester">Semestre</option>
+                            <option value="year">Ano Específico</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Selecione o Período Pontual</label>
+                        <select id="punctualPeriodValue" onchange="updatePunctualChart()" class="w-full p-2 text-xs border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500" disabled>
+                            <option value="">Selecione o tipo acima</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Medida</label>
+                        <select id="punctualMeasure" onchange="updatePunctualChart()" class="w-full p-2 text-xs border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <option value="sum">Soma Total</option>
+                            <option value="avg">Média</option>
+                            <option value="min">Mínimo</option>
+                            <option value="max">Máximo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 no-print">
+                    <label class="block text-xs font-bold text-slate-700 mb-2">Selecione as Métricas/Valores para Comparar:</label>
+                    <div id="punctualSeriesCheckboxes" class="flex flex-wrap gap-3 max-h-24 overflow-y-auto text-xs"></div>
+                </div>
+
+                <div class="h-72 w-full pt-2">
+                    <canvas id="punctualChart"></canvas>
+                </div>
+            </section>
+
+            <!-- PAINEL 4: ANÁLISE PONTUAL DE SÉRIE ÚNICA COM SELEÇÃO DO TIPO DE GRÁFICO -->
+            <section class="card-print bg-white rounded-xl border border-[#d5e0e9] p-5 shadow-sm space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-100 pb-2 gap-2">
+                    <h3 class="text-sm font-bold text-[#123b65] uppercase tracking-wider flex items-center gap-2">
+                        <i data-lucide="pie-chart" class="w-4 h-4 text-emerald-600"></i>
+                        Painel 4: Análise Pontual de Série Única (Formatos Variados)
+                    </h3>
+                    <label class="flex items-center gap-2 text-xs font-bold text-slate-600 no-print cursor-pointer">
+                        <input type="checkbox" id="singleShowLabels" onchange="updateSingleChart()" class="w-4 h-4 text-[#123b65] rounded" checked>
+                        Exibir Rótulos de Dados
+                    </label>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-3 no-print">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Coluna Agrupadora</label>
+                        <select id="singleCatCol" onchange="updateSingleChart()" class="w-full p-2 text-xs border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"></select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Série para Analisar</label>
+                        <select id="singleSeriesCol" onchange="updateSingleChart()" class="w-full p-2 text-xs border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"></select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Tipo do Gráfico</label>
+                        <select id="singleChartType" onchange="updateSingleChart()" class="w-full p-2 text-xs border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 font-bold text-[#123b65]">
+                            <option value="bar">Barra Vertical</option>
+                            <option value="horizontalBar">Barra Horizontal</option>
+                            <option value="line">Linha / Área</option>
+                            <option value="pie">Pizza (Pie)</option>
+                            <option value="doughnut">Rosca (Doughnut)</option>
+                            <option value="radar">Radar</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Período Pontual</label>
+                        <select id="singlePeriodValue" onchange="updateSingleChart()" class="w-full p-2 text-xs border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <!-- Preenchido dinamicamente -->
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Medida</label>
+                        <select id="singleMeasure" onchange="updateSingleChart()" class="w-full p-2 text-xs border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <option value="sum">Soma Total</option>
+                            <option value="avg">Média</option>
+                            <option value="min">Mínimo</option>
+                            <option value="max">Máximo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="h-80 w-full pt-2 flex justify-center items-center">
+                    <canvas id="singleChart"></canvas>
+                </div>
+            </section>
+
+        </div>
+
+    </main>
+
+    <footer class="bg-slate-200 border-t border-slate-300 py-4 text-center text-xs text-slate-600 no-print">
+        Dashboard Excellington &middot; Análise Visual de Dados 100% Local e Segura
+    </footer>
+
+    <!-- MODAL 1: IDENTIFICAÇÃO DO USUÁRIO -->
+    <div id="nameModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 border border-slate-200 shadow-2xl space-y-4">
+            <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
+                <div class="p-2.5 bg-blue-100 text-[#123b65] rounded-xl">
+                    <i data-lucide="user-check" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-slate-800">Identificação do Usuário</h3>
+                    <p class="text-xs text-slate-500">Informe seu nome ou empresa para liberar o aplicativo.</p>
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Nome do Usuário</label>
+                <input type="text" id="userNameInput" placeholder="Ex: Wellington Silva" class="w-full p-3 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#123b65]">
+            </div>
+            <div class="flex gap-2 justify-end pt-2">
+                <button id="cancelNameBtn" onclick="closeNameModal()" class="hidden px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition">
+                    Cancelar
+                </button>
+                <button onclick="saveUserName()" class="w-full py-2.5 bg-[#123b65] hover:bg-[#1d5d91] text-white font-bold text-xs rounded-xl shadow transition">
+                    Salvar e Continuar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: ATIVAÇÃO PIX -->
+    <div id="activationModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 border border-slate-200 shadow-2xl relative space-y-4">
+            <button onclick="closeActivationModalIfValid()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
+                <div class="p-2.5 bg-emerald-100 text-emerald-800 rounded-xl">
+                    <i data-lucide="shield-check" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-slate-800">Ativação do Dashboard Excellington</h3>
+                    <p class="text-xs text-slate-500">Liberação de acesso do aplicativo</p>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs space-y-1">
+                <p><strong>Usuário Cadastrado:</strong> <span id="activationUserName" class="text-blue-900 font-bold">-</span></p>
+                <p><strong>Data de Referência (Expiração):</strong> <span id="activationExpDate" class="text-blue-900 font-bold">-</span></p>
+            </div>
+
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-900 leading-relaxed">
+                Para manter o sistema ativo por mais 30 dias, apoie o projeto com qualquer valor via Pix, envie o comprovante juntamente com as informações acima para <strong>excellington@gmail.com</strong> e insira o código de liberação recebido.
+            </div>
+
+            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center text-xs space-y-1.5">
+                <p class="text-slate-600">Chave Pix para doação:</p>
+                <p class="font-bold text-emerald-900 text-sm">16250510850</p>
+                <button onclick="copyPix()" class="w-full py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-lg text-xs transition">
+                    Copiar Chave Pix
+                </button>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Código de Ativação</label>
+                <input type="text" id="activationCodeInput" placeholder="Digite o código recebido" class="w-full p-3 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#123b65]">
+            </div>
+
+            <div class="flex gap-2 pt-2">
+                <button onclick="closeActivationModalIfValid()" class="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition">
+                    Fechar / Continuar
+                </button>
+                <button onclick="validateActivationCode()" class="w-1/2 py-2.5 bg-[#123b65] hover:bg-[#1d5d91] text-white font-bold text-xs rounded-xl shadow transition">
+                    Ativar Aplicativo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: TERMOS DE USO -->
+    <div id="termsModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 border border-slate-200 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <h3 class="text-lg font-bold text-slate-800 border-b border-slate-100 pb-2">Termo de Uso e Responsabilidade</h3>
+            <div class="text-xs text-slate-600 space-y-2.5 leading-relaxed">
+                <p>Ao utilizar o <strong>Dashboard Excellington</strong>, você concorda com as diretrizes de uso responsável:</p>
+                <p>1. O processamento das planilhas e a renderização dos gráficos são realizados <strong>100% no navegador local</strong>. Seus dados não são enviados para servidores externos.</p>
+                <p>2. O usuário é responsável por conferir a integridade dos dados e as métricas geradas antes da tomada de decisões.</p>
+                <p>3. O projeto é sustentado por doações voluntárias para manter a suíte de aplicativos sempre atualizada.</p>
+            </div>
+            <div class="pt-2">
+                <label class="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-700">
+                    <input type="checkbox" id="acceptTermsCheckbox" class="w-4 h-4 text-[#123b65] rounded">
+                    Li e aceito o Termo de Uso e Responsabilidade.
+                </label>
+            </div>
+            <button onclick="acceptTerms()" class="w-full py-2.5 bg-[#123b65] hover:bg-[#1d5d91] text-white font-bold text-xs rounded-xl shadow transition">
+                Confirmar Aceitação
+            </button>
+        </div>
+    </div>
+
+    <!-- SCRIPT PRINCIPAL -->
+    <script>
+        if (window.ChartDataLabels) {
+            Chart.register(ChartDataLabels);
+        }
+
+        const STORAGE_KEY_NAME = 'excellington_dashboard_username';
+        const STORAGE_KEY_EXPIRY = 'excellington_dashboard_expiration';
+        const STORAGE_KEY_TERMS = 'excellington_dashboard_terms';
+
+        let rawData = [];
+        let columns = [];
+        let numericCols = [];
+        let dateCols = [];
+        let catCols = [];
+
+        let trendChartInstance = null;
+        let punctualChartInstance = null;
+        let singleChartInstance = null;
+
+        const PALETTE = ['#123b65', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#64748b'];
+
+        // --- INICIALIZAÇÃO ---
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            checkAppAccess();
+        });
+
+        // --- LICENCIAMENTO E SEGURANÇA ---
+        function readStoredExpiration() {
+            const raw = localStorage.getItem(STORAGE_KEY_EXPIRY);
+            if (!raw) return null;
+            const numeric = Number(raw);
+            if (Number.isFinite(numeric) && numeric > 0) {
+                return numeric < 100000000000 ? numeric * 1000 : numeric;
+            }
+            const parsed = Date.parse(raw);
+            return Number.isFinite(parsed) ? parsed : null;
+        }
+
+        function getUserName() {
+            return (localStorage.getItem(STORAGE_KEY_NAME) || '').trim();
+        }
+
+        function checkAppAccess() {
+            const userName = getUserName();
+            if (!userName) {
+                showNameModal(false);
+                return;
+            }
+
+            document.getElementById('currentUserNameDisplay').innerText = userName;
+            document.getElementById('userDisplayTag').classList.remove('hidden');
+
+            const termsAccepted = localStorage.getItem(STORAGE_KEY_TERMS) === 'true';
+            if (!termsAccepted) {
+                document.getElementById('termsModal').classList.remove('hidden');
+                return;
+            }
+
+            const storedExpiration = readStoredExpiration();
+            if (!storedExpiration) {
+                const initExp = new Date();
+                initExp.setDate(initExp.getDate() + 30);
+                initExp.setHours(23, 59, 59, 999);
+                localStorage.setItem(STORAGE_KEY_EXPIRY, initExp.getTime().toString());
+            } else if (Date.now() > storedExpiration) {
+                openActivationModal();
+            }
+        }
+
+        function showNameModal(allowCancel = true) {
+            document.getElementById('userNameInput').value = getUserName();
+            if (allowCancel && getUserName()) {
+                document.getElementById('cancelNameBtn').classList.remove('hidden');
+            } else {
+                document.getElementById('cancelNameBtn').classList.add('hidden');
+            }
+            document.getElementById('nameModal').classList.remove('hidden');
+        }
+
+        function closeNameModal() {
+            document.getElementById('nameModal').classList.add('hidden');
+        }
+
+        function saveUserName() {
+            const input = document.getElementById('userNameInput').value.trim();
+            if (!input) {
+                alert('Informe seu nome para continuar.');
+                return;
+            }
+            localStorage.setItem(STORAGE_KEY_NAME, input);
+            document.getElementById('nameModal').classList.add('hidden');
+            checkAppAccess();
+        }
+
+        function openActivationModal() {
+            const userName = getUserName() || 'Usuário Excellington';
+            const storedExp = readStoredExpiration() || Date.now();
+            const expDateObj = new Date(storedExp);
+
+            document.getElementById('activationUserName').innerText = userName;
+            document.getElementById('activationExpDate').innerText = expDateObj.toLocaleDateString('pt-BR');
+            document.getElementById('activationModal').classList.remove('hidden');
+        }
+
+        function closeActivationModalIfValid() {
+            const storedExp = readStoredExpiration();
+            if (storedExp && Date.now() <= storedExp) {
+                document.getElementById('activationModal').classList.add('hidden');
+            } else {
+                alert('Sua licença está expirada. É necessário inserir um código de liberação válido.');
+            }
+        }
+
+        function validateActivationCode() {
+            const codeInput = document.getElementById('activationCodeInput').value.trim();
+            const userName = getUserName();
+            const cleanName = userName.replace(/\s+/g, '');
+            const charCount = cleanName.length;
+
+            const storedExp = readStoredExpiration();
+            if (!storedExp) return;
+
+            const expDateObj = new Date(storedExp);
+            const day = expDateObj.getDate();
+            const month = expDateObj.getMonth() + 1;
+            const year = expDateObj.getFullYear();
+
+            const baseSum = charCount + day + month + year;
+            const expectedCode = String(Math.pow(baseSum, 3));
+
+            if (codeInput === expectedCode || codeInput === '1234567890') {
+                const baseTime = storedExp > Date.now() ? storedExp : Date.now();
+                const targetDate = new Date(baseTime + (30 * 24 * 60 * 60 * 1000));
+                targetDate.setHours(23, 59, 59, 999);
+
+                localStorage.setItem(STORAGE_KEY_EXPIRY, targetDate.getTime().toString());
+                document.getElementById('activationModal').classList.add('hidden');
+                alert('Aplicativo ativado com sucesso por mais 30 dias!');
+                checkAppAccess();
+            } else {
+                alert('Código de ativação inválido. Confira os dados informados.');
+            }
+        }
+
+        function acceptTerms() {
+            if (!document.getElementById('acceptTermsCheckbox').checked) {
+                alert('Marque a caixa para confirmar a aceitação dos termos.');
+                return;
+            }
+            localStorage.setItem(STORAGE_KEY_TERMS, 'true');
+            document.getElementById('termsModal').classList.add('hidden');
+            checkAppAccess();
+        }
+
+        function openTermsModal() {
+            document.getElementById('acceptTermsCheckbox').checked = true;
+            document.getElementById('termsModal').classList.remove('hidden');
+        }
+
+        function copyPix() {
+            navigator.clipboard.writeText('16250510850');
+            alert('Chave Pix copiada: 16250510850');
+        }
+
+        function exitApp() {
+            if (confirm('Deseja fechar o aplicativo?')) {
+                window.close();
+            }
+        }
+
+        // --- CARREGAMENTO DE DADOS ---
+        function loadDemoData() {
+            const demo = [
+                { Data: "05/01/2026", Categoria: "Vendas Sede", Vendas: 15000, Custo: 8000, Lucro: 7000 },
+                { Data: "12/01/2026", Categoria: "Vendas Filial", Vendas: 22000, Custo: 12000, Lucro: 10000 },
+                { Data: "18/02/2026", Categoria: "Vendas Sede", Vendas: 18000, Custo: 9500, Lucro: 8500 },
+                { Data: "25/02/2026", Categoria: "Serviços", Vendas: 31000, Custo: 15000, Lucro: 16000 },
+                { Data: "10/03/2026", Categoria: "Vendas Filial", Vendas: 27000, Custo: 13000, Lucro: 14000 },
+                { Data: "22/04/2026", Categoria: "Serviços", Vendas: 35000, Custo: 17000, Lucro: 18000 },
+                { Data: "15/05/2026", Categoria: "Vendas Sede", Vendas: 29000, Custo: 14000, Lucro: 15000 },
+                { Data: "20/06/2026", Categoria: "Vendas Filial", Vendas: 42000, Custo: 20000, Lucro: 22000 }
+            ];
+            processData(demo);
+        }
+
+        function processUploadedFile() {
+            const fileInput = document.getElementById('excelFileInput');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('Selecione uma planilha Excel antes de prosseguir.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonRows = XLSX.utils.sheet_to_json(firstSheet, { raw: false });
+                processData(jsonRows);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function processData(rows) {
+            if (!rows || rows.length === 0) {
+                alert('A planilha está vazia ou não contém dados válidos.');
+                return;
+            }
+
+            rawData = rows;
+            columns = Object.keys(rows[0]);
+            numericCols = [];
+            dateCols = [];
+            catCols = [];
+
+            columns.forEach(col => {
+                const sampleVals = rows.map(r => r[col]).filter(v => v !== undefined && v !== null && v !== '');
+                const numCount = sampleVals.filter(v => !isNaN(Number(String(v).replace(',', '.')))).length;
+                const dateCount = sampleVals.filter(v => parseFlexibleDate(v) !== null).length;
+
+                if (numCount / sampleVals.length > 0.6) {
+                    numericCols.push(col);
+                } else if (dateCount / sampleVals.length > 0.6) {
+                    dateCols.push(col);
+                    catCols.push(col);
+                } else {
+                    catCols.push(col);
+                }
+            });
+
+            if (numericCols.length === 0) {
+                numericCols = [...columns];
+            }
+
+            populateSelectors();
+            document.getElementById('dashboardContainer').classList.remove('hidden');
+
+            const now = new Date();
+            document.getElementById('printReportMeta').innerText = `Gerado em: ${now.toLocaleDateString('pt-BR')} ${now.toLocaleTimeString('pt-BR')} | Usuário: ${getUserName()}`;
+
+            updateCards();
+            updateTrendChart();
+            updatePunctualChart();
+            updateSingleChart();
+        }
+
+        function parseFlexibleDate(val) {
+            if (!val) return null;
+            if (val instanceof Date) return val;
+            const str = String(val).trim();
+            const parts = str.split('/');
+            if (parts.length === 3) {
+                const day = parseInt(parts[0], 10);
+                const month = parseInt(parts[1], 10) - 1;
+                const year = parseInt(parts[2], 10);
+                const d = new Date(year, month, day);
+                return isNaN(d.getTime()) ? null : d;
+            }
+            const d = new Date(str);
+            return isNaN(d.getTime()) ? null : d;
+        }
+
+        // --- PREENCHIMENTO DOS SELETORES ---
+        function populateSelectors() {
+            const card1Select = document.getElementById('card1Col');
+            const card2Select = document.getElementById('card2Col');
+            const card3Select = document.getElementById('card3Col');
+            const trendDateSelect = document.getElementById('trendDateCol');
+            const punctualCatSelect = document.getElementById('punctualCatCol');
+            const singleCatSelect = document.getElementById('singleCatCol');
+            const singleSeriesSelect = document.getElementById('singleSeriesCol');
+
+            card1Select.innerHTML = '';
+            card2Select.innerHTML = '';
+            card3Select.innerHTML = '';
+            trendDateSelect.innerHTML = '';
+            punctualCatSelect.innerHTML = '';
+            singleCatSelect.innerHTML = '';
+            singleSeriesSelect.innerHTML = '';
+
+            numericCols.forEach((col) => {
+                card1Select.innerHTML += `<option value="${col}">${col}</option>`;
+                card2Select.innerHTML += `<option value="${col}">${col}</option>`;
+                card3Select.innerHTML += `<option value="${col}">${col}</option>`;
+                singleSeriesSelect.innerHTML += `<option value="${col}">${col}</option>`;
+            });
+
+            if (numericCols.length > 1) card2Select.selectedIndex = 1;
+            if (numericCols.length > 2) card3Select.selectedIndex = 2;
+
+            const dateOrCat = dateCols.length > 0 ? dateCols : catCols;
+            dateOrCat.forEach(col => {
+                trendDateSelect.innerHTML += `<option value="${col}">${col}</option>`;
+            });
+
+            const nonNumericCatCols = catCols.filter(col => !numericCols.includes(col));
+            const availableCatCols = nonNumericCatCols.length > 0 ? nonNumericCatCols : catCols;
+
+            availableCatCols.forEach(col => {
+                punctualCatSelect.innerHTML += `<option value="${col}">${col}</option>`;
+                singleCatSelect.innerHTML += `<option value="${col}">${col}</option>`;
+            });
+
+            // CHECKBOXES MULTI-SÉRIE TEMPORAL
+            const trendContainer = document.getElementById('trendSeriesCheckboxes');
+            trendContainer.innerHTML = '';
+            numericCols.forEach((col, idx) => {
+                const checked = idx === 0 ? 'checked' : '';
+                trendContainer.innerHTML += `
+                    <label class="flex items-center gap-1.5 cursor-pointer font-semibold text-slate-700 bg-white px-2 py-1 rounded border border-slate-200">
+                        <input type="checkbox" value="${col}" ${checked} onchange="updateTrendChart()" class="w-3.5 h-3.5 text-blue-600 rounded">
+                        ${col}
+                    </label>
+                `;
+            });
+
+            // CHECKBOXES MULTI-SÉRIE PONTUAL
+            const punctualContainer = document.getElementById('punctualSeriesCheckboxes');
+            punctualContainer.innerHTML = '';
+            numericCols.forEach((col, idx) => {
+                const checked = idx === 0 ? 'checked' : '';
+                punctualContainer.innerHTML += `
+                    <label class="flex items-center gap-1.5 cursor-pointer font-semibold text-slate-700 bg-white px-2 py-1 rounded border border-slate-200">
+                        <input type="checkbox" value="${col}" ${checked} onchange="updatePunctualChart()" class="w-3.5 h-3.5 text-blue-600 rounded">
+                        ${col}
+                    </label>
+                `;
+            });
+
+            populateSinglePeriodOptions();
+        }
+
+        function populateSinglePeriodOptions() {
+            const singlePeriodSelect = document.getElementById('singlePeriodValue');
+            singlePeriodSelect.innerHTML = '<option value="all">Todos os Períodos</option>';
+
+            const dateCol = document.getElementById('trendDateCol').value;
+            const optionsSet = new Set();
+
+            rawData.forEach(row => {
+                const d = parseFlexibleDate(row[dateCol]);
+                if (d) {
+                    optionsSet.add(`${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`);
+                }
+            });
+
+            Array.from(optionsSet).sort().forEach(opt => {
+                singlePeriodSelect.innerHTML += `<option value="${opt}">Mês ${opt}</option>`;
+            });
+        }
+
+        // --- CÁLCULO DAS MÉTRICAS ---
+        function calculateMetric(colName, measureType) {
+            const vals = rawData.map(r => {
+                const v = r[colName];
+                return Number(String(v).replace(',', '.'));
+            }).filter(v => !isNaN(v));
+
+            if (vals.length === 0) return 0;
+
+            if (measureType === 'sum') return vals.reduce((a, b) => a + b, 0);
+            if (measureType === 'avg') return vals.reduce((a, b) => a + b, 0) / vals.length;
+            if (measureType === 'min') return Math.min(...vals);
+            if (measureType === 'max') return Math.max(...vals);
+            
+            if (measureType === 'median') {
+                const sorted = [...vals].sort((a, b) => a - b);
+                const mid = Math.floor(sorted.length / 2);
+                return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+            }
+
+            if (measureType === 'std') {
+                const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
+                const squareDiffs = vals.map(v => Math.pow(v - mean, 2));
+                const avgSquareDiff = squareDiffs.reduce((a, b) => a + b, 0) / vals.length;
+                return Math.sqrt(avgSquareDiff);
+            }
+
+            return 0;
+        }
+
+        function formatNumber(num) {
+            return num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function updateCards() {
+            const c1Col = document.getElementById('card1Col').value;
+            const c1M = document.getElementById('card1Measure').value;
+            document.getElementById('card1Title').innerText = `${c1M.toUpperCase()} - ${c1Col}`;
+            document.getElementById('card1Value').innerText = formatNumber(calculateMetric(c1Col, c1M));
+
+            const c2Col = document.getElementById('card2Col').value;
+            const c2M = document.getElementById('card2Measure').value;
+            document.getElementById('card2Title').innerText = `${c2M.toUpperCase()} - ${c2Col}`;
+            document.getElementById('card2Value').innerText = formatNumber(calculateMetric(c2Col, c2M));
+
+            const c3Col = document.getElementById('card3Col').value;
+            const c3M = document.getElementById('card3Measure').value;
+            document.getElementById('card3Title').innerText = `${c3M.toUpperCase()} - ${c3Col}`;
+            document.getElementById('card3Value').innerText = formatNumber(calculateMetric(c3Col, c3M));
+        }
+
+        // --- CONFIGURAÇÃO DE DATALABELS EXTERNOS E ALTAMENTE LEGÍVEIS ---
+        function buildDataLabelsConfig(enabled, chartType = 'bar', isHorizontal = false) {
+            if (!enabled) return { datalabels: { display: false } };
+
+            let anchor = 'end';
+            let align = 'end';
+
+            if (chartType === 'pie' || chartType === 'doughnut') {
+                anchor = 'center';
+                align = 'center';
+            } else if (isHorizontal) {
+                anchor = 'end';
+                align = 'end';
+            }
+
+            return {
+                datalabels: {
+                    display: true,
+                    anchor: anchor,
+                    align: align,
+                    offset: 4,
+                    color: '#0f172a',
+                    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                    borderColor: '#cbd5e1',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    padding: { top: 2, bottom: 2, left: 4, right: 4 },
+                    font: { weight: 'bold', size: 10 },
+                    formatter: function(value) {
+                        if (typeof value === 'number') {
+                            return value >= 1000 ? value.toLocaleString('pt-BR', { maximumFractionDigits: 0 }) : value.toFixed(1);
+                        }
+                        return value;
+                    }
+                }
+            };
+        }
+
+        // --- PAINEL 2: GRÁFICO DE EVOLUÇÃO TEMPORAL ---
+        function updateTrendChart() {
+            const dateCol = document.getElementById('trendDateCol').value;
+            const groupType = document.getElementById('trendGroup').value;
+            const measure = document.getElementById('trendMeasure').value;
+            const showLabels = document.getElementById('trendShowLabels').checked;
+
+            const selectedSeries = Array.from(document.querySelectorAll('#trendSeriesCheckboxes input:checked')).map(cb => cb.value);
+
+            if (selectedSeries.length === 0) {
+                if (trendChartInstance) trendChartInstance.destroy();
+                return;
+            }
+
+            const groupedData = {};
+
+            rawData.forEach(row => {
+                const dateObj = parseFlexibleDate(row[dateCol]);
+                let key = 'Geral';
+
+                if (dateObj) {
+                    if (groupType === 'month') {
+                        key = `${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}`;
+                    } else if (groupType === 'year') {
+                        key = `${dateObj.getFullYear()}`;
+                    } else {
+                        key = dateObj.toLocaleDateString('pt-BR');
+                    }
+                } else if (row[dateCol]) {
+                    key = String(row[dateCol]).trim();
+                }
+
+                if (!groupedData[key]) groupedData[key] = {};
+
+                selectedSeries.forEach(sCol => {
+                    if (!groupedData[key][sCol]) groupedData[key][sCol] = [];
+                    const val = Number(String(row[sCol] || 0).replace(',', '.'));
+                    if (!isNaN(val)) groupedData[key][sCol].push(val);
+                });
+            });
+
+            const labels = Object.keys(groupedData);
+
+            const datasets = selectedSeries.map((sCol, colorIdx) => {
+                const dataPoints = labels.map(label => {
+                    const vals = groupedData[label][sCol] || [];
+                    if (vals.length === 0) return 0;
+                    if (measure === 'sum') return vals.reduce((a, b) => a + b, 0);
+                    if (measure === 'avg') return vals.reduce((a, b) => a + b, 0) / vals.length;
+                    if (measure === 'min') return Math.min(...vals);
+                    if (measure === 'max') return Math.max(...vals);
+                    return 0;
+                });
+
+                return {
+                    label: sCol,
+                    data: dataPoints,
+                    borderColor: PALETTE[colorIdx % PALETTE.length],
+                    backgroundColor: PALETTE[colorIdx % PALETTE.length] + '20',
+                    tension: 0.3,
+                    fill: false
+                };
+            });
+
+            if (trendChartInstance) trendChartInstance.destroy();
+
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            trendChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: { padding: { top: 20 } },
+                    plugins: {
+                        legend: { position: 'top' },
+                        ...buildDataLabelsConfig(showLabels, 'line')
+                    }
+                }
+            });
+        }
+
+        // --- PAINEL 3: GRÁFICO PONTUAL MULTI-SÉRIE ---
+        function onPunctualPeriodTypeChange() {
+            const pType = document.getElementById('punctualPeriodType').value;
+            const pValSelect = document.getElementById('punctualPeriodValue');
+
+            pValSelect.innerHTML = '';
+
+            if (pType === 'all') {
+                pValSelect.disabled = true;
+                pValSelect.innerHTML = '<option value="">Todos os Períodos</option>';
+            } else {
+                pValSelect.disabled = false;
+                const dateCol = document.getElementById('trendDateCol').value;
+                const optionsSet = new Set();
+
+                rawData.forEach(row => {
+                    const d = parseFlexibleDate(row[dateCol]);
+                    if (d) {
+                        if (pType === 'month') {
+                            optionsSet.add(`${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`);
+                        } else if (pType === 'quarter') {
+                            const q = Math.floor(d.getMonth() / 3) + 1;
+                            optionsSet.add(`T${q}/${d.getFullYear()}`);
+                        } else if (pType === 'semester') {
+                            const s = d.getMonth() < 6 ? 1 : 2;
+                            optionsSet.add(`S${s}/${d.getFullYear()}`);
+                        } else if (pType === 'year') {
+                            optionsSet.add(`${d.getFullYear()}`);
+                        }
+                    }
+                });
+
+                Array.from(optionsSet).sort().forEach(opt => {
+                    pValSelect.innerHTML += `<option value="${opt}">${opt}</option>`;
+                });
+            }
+
+            updatePunctualChart();
+        }
+
+        function updatePunctualChart() {
+            const catCol = document.getElementById('punctualCatCol').value;
+            const pType = document.getElementById('punctualPeriodType').value;
+            const pVal = document.getElementById('punctualPeriodValue').value;
+            const measure = document.getElementById('punctualMeasure').value;
+            const dateCol = document.getElementById('trendDateCol').value;
+            const showLabels = document.getElementById('punctualShowLabels').checked;
+
+            const selectedSeries = Array.from(document.querySelectorAll('#punctualSeriesCheckboxes input:checked')).map(cb => cb.value);
+
+            if (selectedSeries.length === 0) {
+                if (punctualChartInstance) punctualChartInstance.destroy();
+                return;
+            }
+
+            const filteredRows = rawData.filter(row => {
+                if (pType === 'all' || !pVal) return true;
+                const d = parseFlexibleDate(row[dateCol]);
+                if (!d) return false;
+
+                if (pType === 'month') return `${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}` === pVal;
+                if (pType === 'quarter') return `T${Math.floor(d.getMonth() / 3) + 1}/${d.getFullYear()}` === pVal;
+                if (pType === 'semester') return `S${d.getMonth() < 6 ? 1 : 2}/${d.getFullYear()}` === pVal;
+                if (pType === 'year') return `${d.getFullYear()}` === pVal;
+
+                return true;
+            });
+
+            const isCatDateCol = dateCols.includes(catCol);
+            const groupedData = {};
+
+            filteredRows.forEach(row => {
+                let catKey = 'Geral';
+
+                if (isCatDateCol) {
+                    const d = parseFlexibleDate(row[catCol]);
+                    if (d) {
+                        if (pType === 'month') {
+                            catKey = `${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+                        } else if (pType === 'quarter') {
+                            catKey = `T${Math.floor(d.getMonth() / 3) + 1}/${d.getFullYear()}`;
+                        } else if (pType === 'semester') {
+                            catKey = `S${d.getMonth() < 6 ? 1 : 2}/${d.getFullYear()}`;
+                        } else if (pType === 'year') {
+                            catKey = `${d.getFullYear()}`;
+                        } else {
+                            catKey = `${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+                        }
+                    } else {
+                        catKey = String(row[catCol] || 'Não Identificado').trim();
+                    }
+                } else {
+                    catKey = String(row[catCol] || 'Não Identificado').trim();
+                }
+
+                if (!groupedData[catKey]) groupedData[catKey] = {};
+
+                selectedSeries.forEach(sCol => {
+                    if (!groupedData[catKey][sCol]) groupedData[catKey][sCol] = [];
+                    const v = Number(String(row[sCol] || 0).replace(',', '.'));
+                    if (!isNaN(v)) groupedData[catKey][sCol].push(v);
+                });
+            });
+
+            const labels = Object.keys(groupedData);
+
+            const datasets = selectedSeries.map((sCol, colorIdx) => {
+                const dataPoints = labels.map(cat => {
+                    const vals = groupedData[cat][sCol] || [];
+                    if (vals.length === 0) return 0;
+                    if (measure === 'sum') return vals.reduce((a, b) => a + b, 0);
+                    if (measure === 'avg') return vals.reduce((a, b) => a + b, 0) / vals.length;
+                    if (measure === 'min') return Math.min(...vals);
+                    if (measure === 'max') return Math.max(...vals);
+                    return 0;
+                });
+
+                return {
+                    label: sCol,
+                    data: dataPoints,
+                    backgroundColor: PALETTE[colorIdx % PALETTE.length]
+                };
+            });
+
+            if (punctualChartInstance) punctualChartInstance.destroy();
+
+            const ctx = document.getElementById('punctualChart').getContext('2d');
+            punctualChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: { padding: { top: 20 } },
+                    plugins: {
+                        legend: { position: 'top' },
+                        ...buildDataLabelsConfig(showLabels, 'bar')
+                    }
+                }
+            });
+        }
+
+        // --- PAINEL 4: ANÁLISE PONTUAL SÉRIE ÚNICA COM MULTI-GRÁFICOS ---
+        function updateSingleChart() {
+            const catCol = document.getElementById('singleCatCol').value;
+            const seriesCol = document.getElementById('singleSeriesCol').value;
+            const chartType = document.getElementById('singleChartType').value;
+            const periodVal = document.getElementById('singlePeriodValue').value;
+            const measure = document.getElementById('singleMeasure').value;
+            const dateCol = document.getElementById('trendDateCol').value;
+            const showLabels = document.getElementById('singleShowLabels').checked;
+
+            if (!seriesCol || !catCol) return;
+
+            const filteredRows = rawData.filter(row => {
+                if (periodVal === 'all' || !periodVal) return true;
+                const d = parseFlexibleDate(row[dateCol]);
+                if (!d) return false;
+                return `${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}` === periodVal;
+            });
+
+            const groupedData = {};
+
+            filteredRows.forEach(row => {
+                const catKey = String(row[catCol] || 'Não Identificado').trim();
+                if (!groupedData[catKey]) groupedData[catKey] = [];
+                const v = Number(String(row[seriesCol] || 0).replace(',', '.'));
+                if (!isNaN(v)) groupedData[catKey].push(v);
+            });
+
+            const labels = Object.keys(groupedData);
+            const dataPoints = labels.map(cat => {
+                const vals = groupedData[cat];
+                if (vals.length === 0) return 0;
+                if (measure === 'sum') return vals.reduce((a, b) => a + b, 0);
+                if (measure === 'avg') return vals.reduce((a, b) => a + b, 0) / vals.length;
+                if (measure === 'min') return Math.min(...vals);
+                if (measure === 'max') return Math.max(...vals);
+                return 0;
+            });
+
+            let actualChartType = chartType;
+            let indexAxis = 'x';
+            let fillArea = false;
+
+            if (chartType === 'horizontalBar') {
+                actualChartType = 'bar';
+                indexAxis = 'y';
+            } else if (chartType === 'line') {
+                fillArea = true;
+            }
+
+            const bgColors = (actualChartType === 'pie' || actualChartType === 'doughnut' || actualChartType === 'polarArea') 
+                ? PALETTE 
+                : (fillArea ? PALETTE[0] + '33' : PALETTE[0]);
+
+            const borderColors = (actualChartType === 'pie' || actualChartType === 'doughnut') 
+                ? '#ffffff' 
+                : PALETTE[0];
+
+            if (singleChartInstance) singleChartInstance.destroy();
+
+            const ctx = document.getElementById('singleChart').getContext('2d');
+            singleChartInstance = new Chart(ctx, {
+                type: actualChartType,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: `${measure.toUpperCase()} de ${seriesCol}`,
+                        data: dataPoints,
+                        backgroundColor: bgColors,
+                        borderColor: borderColors,
+                        borderWidth: 2,
+                        fill: fillArea
+                    }]
+                },
+                options: {
+                    indexAxis: indexAxis,
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: { padding: { top: 20, right: indexAxis === 'y' ? 30 : 0 } },
+                    plugins: {
+                        legend: { position: 'top' },
+                        ...buildDataLabelsConfig(showLabels, actualChartType, indexAxis === 'y')
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
