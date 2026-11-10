@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -136,18 +136,25 @@
                         <div class="space-y-2 no-print">
                             <div>
                                 <label class="block text-[11px] font-bold text-slate-600">Coluna Analisada</label>
-                                <select id="card1Col" onchange="updateCards()" class="w-full p-1.5 text-xs border border-blue-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"></select>
+                                <select id="card1Col" onchange="onCardColChange(1)" class="w-full p-1.5 text-xs border border-blue-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"></select>
                             </div>
                             <div>
                                 <label class="block text-[11px] font-bold text-slate-600">Medida Desejada</label>
-                                <select id="card1Measure" onchange="updateCards()" class="w-full p-1.5 text-xs border border-blue-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <select id="card1Measure" onchange="onCardMeasureChange(1)" class="w-full p-1.5 text-xs border border-blue-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
                                     <option value="sum">Soma Total</option>
                                     <option value="avg">Média</option>
                                     <option value="median">Mediana</option>
                                     <option value="min">Valor Mínimo</option>
                                     <option value="max">Valor Máximo</option>
                                     <option value="std">Desvio Padrão</option>
+                                    <option value="count">Contagem Total (Count)</option>
+                                    <option value="cont_if">Contagem Condicional (Cont.Se)</option>
                                 </select>
+                            </div>
+                            <!-- CAMPO CONDICIONAL 1 -->
+                            <div id="card1CondContainer" class="hidden space-y-1 pt-1 bg-blue-100/60 p-2 rounded-lg border border-blue-200">
+                                <label class="block text-[10px] font-bold text-blue-900 uppercase">Filtrar Item Específico</label>
+                                <select id="card1CondVal" onchange="updateCards()" class="w-full p-1 text-xs border border-blue-300 rounded bg-white"></select>
                             </div>
                         </div>
                         <div class="pt-2 border-t border-blue-100">
@@ -165,18 +172,25 @@
                         <div class="space-y-2 no-print">
                             <div>
                                 <label class="block text-[11px] font-bold text-slate-600">Coluna Analisada</label>
-                                <select id="card2Col" onchange="updateCards()" class="w-full p-1.5 text-xs border border-emerald-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"></select>
+                                <select id="card2Col" onchange="onCardColChange(2)" class="w-full p-1.5 text-xs border border-emerald-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"></select>
                             </div>
                             <div>
                                 <label class="block text-[11px] font-bold text-slate-600">Medida Desejada</label>
-                                <select id="card2Measure" onchange="updateCards()" class="w-full p-1.5 text-xs border border-emerald-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                                <select id="card2Measure" onchange="onCardMeasureChange(2)" class="w-full p-1.5 text-xs border border-emerald-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
                                     <option value="avg">Média</option>
                                     <option value="sum">Soma Total</option>
                                     <option value="median">Mediana</option>
                                     <option value="min">Valor Mínimo</option>
                                     <option value="max">Valor Máximo</option>
                                     <option value="std">Desvio Padrão</option>
+                                    <option value="count">Contagem Total (Count)</option>
+                                    <option value="cont_if">Contagem Condicional (Cont.Se)</option>
                                 </select>
+                            </div>
+                            <!-- CAMPO CONDICIONAL 2 -->
+                            <div id="card2CondContainer" class="hidden space-y-1 pt-1 bg-emerald-100/60 p-2 rounded-lg border border-emerald-200">
+                                <label class="block text-[10px] font-bold text-emerald-900 uppercase">Filtrar Item Específico</label>
+                                <select id="card2CondVal" onchange="updateCards()" class="w-full p-1 text-xs border border-emerald-300 rounded bg-white"></select>
                             </div>
                         </div>
                         <div class="pt-2 border-t border-emerald-100">
@@ -194,18 +208,25 @@
                         <div class="space-y-2 no-print">
                             <div>
                                 <label class="block text-[11px] font-bold text-slate-600">Coluna Analisada</label>
-                                <select id="card3Col" onchange="updateCards()" class="w-full p-1.5 text-xs border border-amber-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-amber-500"></select>
+                                <select id="card3Col" onchange="onCardColChange(3)" class="w-full p-1.5 text-xs border border-amber-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-amber-500"></select>
                             </div>
                             <div>
                                 <label class="block text-[11px] font-bold text-slate-600">Medida Desejada</label>
-                                <select id="card3Measure" onchange="updateCards()" class="w-full p-1.5 text-xs border border-amber-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-amber-500">
+                                <select id="card3Measure" onchange="onCardMeasureChange(3)" class="w-full p-1.5 text-xs border border-amber-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-amber-500">
                                     <option value="median">Mediana</option>
                                     <option value="sum">Soma Total</option>
                                     <option value="avg">Média</option>
                                     <option value="min">Valor Mínimo</option>
                                     <option value="max">Valor Máximo</option>
                                     <option value="std">Desvio Padrão</option>
+                                    <option value="count">Contagem Total (Count)</option>
+                                    <option value="cont_if">Contagem Condicional (Cont.Se)</option>
                                 </select>
+                            </div>
+                            <!-- CAMPO CONDICIONAL 3 -->
+                            <div id="card3CondContainer" class="hidden space-y-1 pt-1 bg-amber-100/60 p-2 rounded-lg border border-amber-200">
+                                <label class="block text-[10px] font-bold text-amber-900 uppercase">Filtrar Item Específico</label>
+                                <select id="card3CondVal" onchange="updateCards()" class="w-full p-1 text-xs border border-amber-300 rounded bg-white"></select>
                             </div>
                         </div>
                         <div class="pt-2 border-t border-amber-100">
@@ -772,15 +793,19 @@
             singleCatSelect.innerHTML = '';
             singleSeriesSelect.innerHTML = '';
 
-            numericCols.forEach((col) => {
+            // Para os cartões, podemos usar todas as colunas (texto ou número) para contagem
+            columns.forEach((col) => {
                 card1Select.innerHTML += `<option value="${col}">${col}</option>`;
                 card2Select.innerHTML += `<option value="${col}">${col}</option>`;
                 card3Select.innerHTML += `<option value="${col}">${col}</option>`;
+            });
+
+            numericCols.forEach((col) => {
                 singleSeriesSelect.innerHTML += `<option value="${col}">${col}</option>`;
             });
 
-            if (numericCols.length > 1) card2Select.selectedIndex = 1;
-            if (numericCols.length > 2) card3Select.selectedIndex = 2;
+            if (columns.length > 1) card2Select.selectedIndex = 1;
+            if (columns.length > 2) card3Select.selectedIndex = 2;
 
             const dateOrCat = dateCols.length > 0 ? dateCols : catCols;
             dateOrCat.forEach(col => {
@@ -794,6 +819,11 @@
                 punctualCatSelect.innerHTML += `<option value="${col}">${col}</option>`;
                 singleCatSelect.innerHTML += `<option value="${col}">${col}</option>`;
             });
+
+            // Atualizar valores condicionais para cada cartão
+            populateCardCondValues(1);
+            populateCardCondValues(2);
+            populateCardCondValues(3);
 
             // CHECKBOXES MULTI-SÉRIE TEMPORAL
             const trendContainer = document.getElementById('trendSeriesCheckboxes');
@@ -824,6 +854,34 @@
             populateSinglePeriodOptions();
         }
 
+        function populateCardCondValues(cardNum) {
+            const colName = document.getElementById(`card${cardNum}Col`).value;
+            const condSelect = document.getElementById(`card${cardNum}CondVal`);
+            condSelect.innerHTML = '';
+
+            const uniqueVals = Array.from(new Set(rawData.map(r => String(r[colName] !== undefined ? r[colName] : '').trim()))).filter(v => v !== '');
+            uniqueVals.sort().forEach(val => {
+                condSelect.innerHTML += `<option value="${val}">${val}</option>`;
+            });
+        }
+
+        function onCardColChange(cardNum) {
+            populateCardCondValues(cardNum);
+            updateCards();
+        }
+
+        function onCardMeasureChange(cardNum) {
+            const measure = document.getElementById(`card${cardNum}Measure`).value;
+            const condContainer = document.getElementById(`card${cardNum}CondContainer`);
+
+            if (measure === 'cont_if') {
+                condContainer.classList.remove('hidden');
+            } else {
+                condContainer.classList.add('hidden');
+            }
+            updateCards();
+        }
+
         function populateSinglePeriodOptions() {
             const singlePeriodSelect = document.getElementById('singlePeriodValue');
             singlePeriodSelect.innerHTML = '<option value="all">Todos os Períodos</option>';
@@ -843,9 +901,24 @@
             });
         }
 
-        // --- CÁLCULO DAS MÉTRICAS ---
-        function calculateMetric(colName, measureType) {
-            const vals = rawData.map(r => {
+        // --- CÁLCULO DAS MÉTRICAS DOS CARTÕES ---
+        function calculateMetric(colName, measureType, condVal = '') {
+            const rows = rawData;
+
+            if (measureType === 'count') {
+                // Conta todas as linhas preenchidas na coluna
+                return rows.filter(r => r[colName] !== undefined && r[colName] !== null && String(r[colName]).trim() !== '').length;
+            }
+
+            if (measureType === 'cont_if') {
+                // Contagem condicional (Cont.Se) baseada no item selecionado
+                return rows.filter(r => {
+                    const cellVal = String(r[colName] !== undefined && r[colName] !== null ? r[colName] : '').trim();
+                    return cellVal === String(condVal).trim();
+                }).length;
+            }
+
+            const vals = rows.map(r => {
                 const v = r[colName];
                 return Number(String(v).replace(',', '.'));
             }).filter(v => !isNaN(v));
@@ -873,25 +946,55 @@
             return 0;
         }
 
-        function formatNumber(num) {
+        function formatNumber(num, measureType) {
+            if (measureType === 'count' || measureType === 'cont_if') {
+                return num.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+            }
             return num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
         function updateCards() {
+            // Cartão 1
             const c1Col = document.getElementById('card1Col').value;
             const c1M = document.getElementById('card1Measure').value;
-            document.getElementById('card1Title').innerText = `${c1M.toUpperCase()} - ${c1Col}`;
-            document.getElementById('card1Value').innerText = formatNumber(calculateMetric(c1Col, c1M));
+            const c1Cond = document.getElementById('card1CondVal').value;
+            
+            if (c1M === 'count') {
+                document.getElementById('card1Title').innerText = `COUNT - ${c1Col}`;
+            } else if (c1M === 'cont_if') {
+                document.getElementById('card1Title').innerText = `CONT.SE (${c1Cond}) - ${c1Col}`;
+            } else {
+                document.getElementById('card1Title').innerText = `${c1M.toUpperCase()} - ${c1Col}`;
+            }
+            document.getElementById('card1Value').innerText = formatNumber(calculateMetric(c1Col, c1M, c1Cond), c1M);
 
+            // Cartão 2
             const c2Col = document.getElementById('card2Col').value;
             const c2M = document.getElementById('card2Measure').value;
-            document.getElementById('card2Title').innerText = `${c2M.toUpperCase()} - ${c2Col}`;
-            document.getElementById('card2Value').innerText = formatNumber(calculateMetric(c2Col, c2M));
+            const c2Cond = document.getElementById('card2CondVal').value;
 
+            if (c2M === 'count') {
+                document.getElementById('card2Title').innerText = `COUNT - ${c2Col}`;
+            } else if (c2M === 'cont_if') {
+                document.getElementById('card2Title').innerText = `CONT.SE (${c2Cond}) - ${c2Col}`;
+            } else {
+                document.getElementById('card2Title').innerText = `${c2M.toUpperCase()} - ${c2Col}`;
+            }
+            document.getElementById('card2Value').innerText = formatNumber(calculateMetric(c2Col, c2M, c2Cond), c2M);
+
+            // Cartão 3
             const c3Col = document.getElementById('card3Col').value;
             const c3M = document.getElementById('card3Measure').value;
-            document.getElementById('card3Title').innerText = `${c3M.toUpperCase()} - ${c3Col}`;
-            document.getElementById('card3Value').innerText = formatNumber(calculateMetric(c3Col, c3M));
+            const c3Cond = document.getElementById('card3CondVal').value;
+
+            if (c3M === 'count') {
+                document.getElementById('card3Title').innerText = `COUNT - ${c3Col}`;
+            } else if (c3M === 'cont_if') {
+                document.getElementById('card3Title').innerText = `CONT.SE (${c3Cond}) - ${c3Col}`;
+            } else {
+                document.getElementById('card3Title').innerText = `${c3M.toUpperCase()} - ${c3Col}`;
+            }
+            document.getElementById('card3Value').innerText = formatNumber(calculateMetric(c3Col, c3M, c3Cond), c3M);
         }
 
         // --- CONFIGURAÇÃO DE DATALABELS EXTERNOS E ALTAMENTE LEGÍVEIS ---
@@ -1245,4 +1348,3 @@
     </script>
 </body>
 </html>
-
