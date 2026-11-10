@@ -250,7 +250,7 @@
                     </label>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 no-print">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 no-print">
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">Coluna de Data/Tempo</label>
                         <select id="trendDateCol" onchange="updateTrendChart()" class="w-full p-2 text-xs border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"></select>
@@ -267,17 +267,25 @@
 
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">Medida</label>
-                        <select id="trendMeasure" onchange="updateTrendChart()" class="w-full p-2 text-xs border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        <select id="trendMeasure" onchange="onTrendMeasureChange()" class="w-full p-2 text-xs border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
                             <option value="sum">Soma Total</option>
                             <option value="avg">Média</option>
                             <option value="min">Mínimo</option>
                             <option value="max">Máximo</option>
+                            <option value="count">Contagem Total (Count)</option>
+                            <option value="cont_if">Contagem Condicional (Cont.Se)</option>
                         </select>
+                    </div>
+
+                    <!-- CAMPO CONDICIONAL PAINEL 2 -->
+                    <div id="trendCondContainer" class="hidden">
+                        <label class="block text-xs font-bold text-blue-900 mb-1">Filtrar Item Específico</label>
+                        <select id="trendCondVal" onchange="updateTrendChart()" class="w-full p-2 text-xs border border-blue-300 rounded-lg bg-blue-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"></select>
                     </div>
                 </div>
 
                 <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 no-print">
-                    <label class="block text-xs font-bold text-slate-700 mb-2">Selecione as Séries Numéricas para Analisar no Gráfico:</label>
+                    <label id="trendSeriesLabel" class="block text-xs font-bold text-slate-700 mb-2">Selecione as Colunas para Analisar no Gráfico:</label>
                     <div id="trendSeriesCheckboxes" class="flex flex-wrap gap-3 max-h-24 overflow-y-auto text-xs"></div>
                 </div>
 
@@ -299,9 +307,9 @@
                     </label>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 no-print">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-3 no-print">
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">Coluna Categoria/Agrupador</label>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Coluna Agrupadora</label>
                         <select id="punctualCatCol" onchange="updatePunctualChart()" class="w-full p-2 text-xs border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"></select>
                     </div>
 
@@ -317,7 +325,7 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">Selecione o Período Pontual</label>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Período Pontual</label>
                         <select id="punctualPeriodValue" onchange="updatePunctualChart()" class="w-full p-2 text-xs border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500" disabled>
                             <option value="">Selecione o tipo acima</option>
                         </select>
@@ -325,17 +333,25 @@
 
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">Medida</label>
-                        <select id="punctualMeasure" onchange="updatePunctualChart()" class="w-full p-2 text-xs border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        <select id="punctualMeasure" onchange="onPunctualMeasureChange()" class="w-full p-2 text-xs border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
                             <option value="sum">Soma Total</option>
                             <option value="avg">Média</option>
                             <option value="min">Mínimo</option>
                             <option value="max">Máximo</option>
+                            <option value="count">Contagem Total (Count)</option>
+                            <option value="cont_if">Contagem Condicional (Cont.Se)</option>
                         </select>
+                    </div>
+
+                    <!-- CAMPO CONDICIONAL PAINEL 3 -->
+                    <div id="punctualCondContainer" class="hidden">
+                        <label class="block text-xs font-bold text-blue-900 mb-1">Filtrar Item Específico</label>
+                        <select id="punctualCondVal" onchange="updatePunctualChart()" class="w-full p-2 text-xs border border-blue-300 rounded-lg bg-blue-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"></select>
                     </div>
                 </div>
 
                 <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 no-print">
-                    <label class="block text-xs font-bold text-slate-700 mb-2">Selecione as Métricas/Valores para Comparar:</label>
+                    <label id="punctualSeriesLabel" class="block text-xs font-bold text-slate-700 mb-2">Selecione as Colunas para Comparar:</label>
                     <div id="punctualSeriesCheckboxes" class="flex flex-wrap gap-3 max-h-24 overflow-y-auto text-xs"></div>
                 </div>
 
@@ -357,15 +373,15 @@
                     </label>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-5 gap-3 no-print">
+                <div class="grid grid-cols-1 md:grid-cols-6 gap-3 no-print">
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">Coluna Agrupadora</label>
                         <select id="singleCatCol" onchange="updateSingleChart()" class="w-full p-2 text-xs border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"></select>
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">Série para Analisar</label>
-                        <select id="singleSeriesCol" onchange="updateSingleChart()" class="w-full p-2 text-xs border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"></select>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Coluna / Série</label>
+                        <select id="singleSeriesCol" onchange="onSingleSeriesColChange()" class="w-full p-2 text-xs border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"></select>
                     </div>
 
                     <div>
@@ -389,12 +405,20 @@
 
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">Medida</label>
-                        <select id="singleMeasure" onchange="updateSingleChart()" class="w-full p-2 text-xs border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        <select id="singleMeasure" onchange="onSingleMeasureChange()" class="w-full p-2 text-xs border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
                             <option value="sum">Soma Total</option>
                             <option value="avg">Média</option>
                             <option value="min">Mínimo</option>
                             <option value="max">Máximo</option>
+                            <option value="count">Contagem Total (Count)</option>
+                            <option value="cont_if">Contagem Condicional (Cont.Se)</option>
                         </select>
+                    </div>
+
+                    <!-- CAMPO CONDICIONAL PAINEL 4 -->
+                    <div id="singleCondContainer" class="hidden">
+                        <label class="block text-xs font-bold text-blue-900 mb-1">Filtrar Item Específico</label>
+                        <select id="singleCondVal" onchange="updateSingleChart()" class="w-full p-2 text-xs border border-blue-300 rounded-lg bg-blue-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"></select>
                     </div>
                 </div>
 
@@ -793,14 +817,11 @@
             singleCatSelect.innerHTML = '';
             singleSeriesSelect.innerHTML = '';
 
-            // Para os cartões, podemos usar todas as colunas (texto ou número) para contagem
+            // Todas as colunas disponíveis para seleção
             columns.forEach((col) => {
                 card1Select.innerHTML += `<option value="${col}">${col}</option>`;
                 card2Select.innerHTML += `<option value="${col}">${col}</option>`;
                 card3Select.innerHTML += `<option value="${col}">${col}</option>`;
-            });
-
-            numericCols.forEach((col) => {
                 singleSeriesSelect.innerHTML += `<option value="${col}">${col}</option>`;
             });
 
@@ -820,36 +841,16 @@
                 singleCatSelect.innerHTML += `<option value="${col}">${col}</option>`;
             });
 
-            // Atualizar valores condicionais para cada cartão
+            // Atualizar valores condicionais para cada painel
             populateCardCondValues(1);
             populateCardCondValues(2);
             populateCardCondValues(3);
+            populatePanelCondValues('trend');
+            populatePanelCondValues('punctual');
+            populatePanelCondValues('single');
 
-            // CHECKBOXES MULTI-SÉRIE TEMPORAL
-            const trendContainer = document.getElementById('trendSeriesCheckboxes');
-            trendContainer.innerHTML = '';
-            numericCols.forEach((col, idx) => {
-                const checked = idx === 0 ? 'checked' : '';
-                trendContainer.innerHTML += `
-                    <label class="flex items-center gap-1.5 cursor-pointer font-semibold text-slate-700 bg-white px-2 py-1 rounded border border-slate-200">
-                        <input type="checkbox" value="${col}" ${checked} onchange="updateTrendChart()" class="w-3.5 h-3.5 text-blue-600 rounded">
-                        ${col}
-                    </label>
-                `;
-            });
-
-            // CHECKBOXES MULTI-SÉRIE PONTUAL
-            const punctualContainer = document.getElementById('punctualSeriesCheckboxes');
-            punctualContainer.innerHTML = '';
-            numericCols.forEach((col, idx) => {
-                const checked = idx === 0 ? 'checked' : '';
-                punctualContainer.innerHTML += `
-                    <label class="flex items-center gap-1.5 cursor-pointer font-semibold text-slate-700 bg-white px-2 py-1 rounded border border-slate-200">
-                        <input type="checkbox" value="${col}" ${checked} onchange="updatePunctualChart()" class="w-3.5 h-3.5 text-blue-600 rounded">
-                        ${col}
-                    </label>
-                `;
-            });
+            renderCheckboxes('trend');
+            renderCheckboxes('punctual');
 
             populateSinglePeriodOptions();
         }
@@ -863,6 +864,54 @@
             uniqueVals.sort().forEach(val => {
                 condSelect.innerHTML += `<option value="${val}">${val}</option>`;
             });
+        }
+
+        function populatePanelCondValues(panelPrefix) {
+            let colName = '';
+            if (panelPrefix === 'single') {
+                colName = document.getElementById('singleSeriesCol').value;
+            } else if (panelPrefix === 'trend') {
+                const checkedCb = document.querySelector('#trendSeriesCheckboxes input:checked');
+                colName = checkedCb ? checkedCb.value : (columns[0] || '');
+            } else if (panelPrefix === 'punctual') {
+                const checkedCb = document.querySelector('#punctualSeriesCheckboxes input:checked');
+                colName = checkedCb ? checkedCb.value : (columns[0] || '');
+            }
+
+            const condSelect = document.getElementById(`${panelPrefix}CondVal`);
+            if (!condSelect) return;
+            condSelect.innerHTML = '';
+
+            const uniqueVals = Array.from(new Set(rawData.map(r => String(r[colName] !== undefined ? r[colName] : '').trim()))).filter(v => v !== '');
+            uniqueVals.sort().forEach(val => {
+                condSelect.innerHTML += `<option value="${val}">${val}</option>`;
+            });
+        }
+
+        function renderCheckboxes(panelPrefix) {
+            const container = document.getElementById(`${panelPrefix}SeriesCheckboxes`);
+            const measureSelect = document.getElementById(`${panelPrefix}Measure`);
+            const isCountOrContIf = measureSelect && (measureSelect.value === 'count' || measureSelect.value === 'cont_if');
+
+            // Se for Contagem, permite escolher qualquer coluna. Caso contrário, restringe às numéricas.
+            const colList = isCountOrContIf ? columns : numericCols;
+
+            container.innerHTML = '';
+            colList.forEach((col, idx) => {
+                const checked = idx === 0 ? 'checked' : '';
+                container.innerHTML += `
+                    <label class="flex items-center gap-1.5 cursor-pointer font-semibold text-slate-700 bg-white px-2 py-1 rounded border border-slate-200">
+                        <input type="checkbox" value="${col}" ${checked} onchange="onCheckboxChange('${panelPrefix}')" class="w-3.5 h-3.5 text-blue-600 rounded">
+                        ${col}
+                    </label>
+                `;
+            });
+        }
+
+        function onCheckboxChange(panelPrefix) {
+            populatePanelCondValues(panelPrefix);
+            if (panelPrefix === 'trend') updateTrendChart();
+            if (panelPrefix === 'punctual') updatePunctualChart();
         }
 
         function onCardColChange(cardNum) {
@@ -880,6 +929,55 @@
                 condContainer.classList.add('hidden');
             }
             updateCards();
+        }
+
+        function onTrendMeasureChange() {
+            const measure = document.getElementById('trendMeasure').value;
+            const condContainer = document.getElementById('trendCondContainer');
+
+            renderCheckboxes('trend');
+            populatePanelCondValues('trend');
+
+            if (measure === 'cont_if') {
+                condContainer.classList.remove('hidden');
+            } else {
+                condContainer.classList.add('hidden');
+            }
+            updateTrendChart();
+        }
+
+        function onPunctualMeasureChange() {
+            const measure = document.getElementById('punctualMeasure').value;
+            const condContainer = document.getElementById('punctualCondContainer');
+
+            renderCheckboxes('punctual');
+            populatePanelCondValues('punctual');
+
+            if (measure === 'cont_if') {
+                condContainer.classList.remove('hidden');
+            } else {
+                condContainer.classList.add('hidden');
+            }
+            updatePunctualChart();
+        }
+
+        function onSingleSeriesColChange() {
+            populatePanelCondValues('single');
+            updateSingleChart();
+        }
+
+        function onSingleMeasureChange() {
+            const measure = document.getElementById('singleMeasure').value;
+            const condContainer = document.getElementById('singleCondContainer');
+
+            populatePanelCondValues('single');
+
+            if (measure === 'cont_if') {
+                condContainer.classList.remove('hidden');
+            } else {
+                condContainer.classList.add('hidden');
+            }
+            updateSingleChart();
         }
 
         function populateSinglePeriodOptions() {
@@ -901,47 +999,23 @@
             });
         }
 
-        // --- CÁLCULO DAS MÉTRICAS DOS CARTÕES ---
-        function calculateMetric(colName, measureType, condVal = '') {
-            const rows = rawData;
-
+        // --- CÁLCULO GERAL DAS MÉTRICAS ---
+        function computeArrayMetric(valsArray, measureType, condVal = '') {
             if (measureType === 'count') {
-                // Conta todas as linhas preenchidas na coluna
-                return rows.filter(r => r[colName] !== undefined && r[colName] !== null && String(r[colName]).trim() !== '').length;
+                return valsArray.filter(v => v !== undefined && v !== null && String(v).trim() !== '').length;
             }
 
             if (measureType === 'cont_if') {
-                // Contagem condicional (Cont.Se) baseada no item selecionado
-                return rows.filter(r => {
-                    const cellVal = String(r[colName] !== undefined && r[colName] !== null ? r[colName] : '').trim();
-                    return cellVal === String(condVal).trim();
-                }).length;
+                return valsArray.filter(v => String(v !== undefined && v !== null ? v : '').trim() === String(condVal).trim()).length;
             }
 
-            const vals = rows.map(r => {
-                const v = r[colName];
-                return Number(String(v).replace(',', '.'));
-            }).filter(v => !isNaN(v));
+            const numVals = valsArray.map(v => Number(String(v).replace(',', '.'))).filter(v => !isNaN(v));
+            if (numVals.length === 0) return 0;
 
-            if (vals.length === 0) return 0;
-
-            if (measureType === 'sum') return vals.reduce((a, b) => a + b, 0);
-            if (measureType === 'avg') return vals.reduce((a, b) => a + b, 0) / vals.length;
-            if (measureType === 'min') return Math.min(...vals);
-            if (measureType === 'max') return Math.max(...vals);
-            
-            if (measureType === 'median') {
-                const sorted = [...vals].sort((a, b) => a - b);
-                const mid = Math.floor(sorted.length / 2);
-                return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-            }
-
-            if (measureType === 'std') {
-                const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
-                const squareDiffs = vals.map(v => Math.pow(v - mean, 2));
-                const avgSquareDiff = squareDiffs.reduce((a, b) => a + b, 0) / vals.length;
-                return Math.sqrt(avgSquareDiff);
-            }
+            if (measureType === 'sum') return numVals.reduce((a, b) => a + b, 0);
+            if (measureType === 'avg') return numVals.reduce((a, b) => a + b, 0) / numVals.length;
+            if (measureType === 'min') return Math.min(...numVals);
+            if (measureType === 'max') return Math.max(...numVals);
 
             return 0;
         }
@@ -958,6 +1032,7 @@
             const c1Col = document.getElementById('card1Col').value;
             const c1M = document.getElementById('card1Measure').value;
             const c1Cond = document.getElementById('card1CondVal').value;
+            const c1Vals = rawData.map(r => r[c1Col]);
             
             if (c1M === 'count') {
                 document.getElementById('card1Title').innerText = `COUNT - ${c1Col}`;
@@ -966,12 +1041,13 @@
             } else {
                 document.getElementById('card1Title').innerText = `${c1M.toUpperCase()} - ${c1Col}`;
             }
-            document.getElementById('card1Value').innerText = formatNumber(calculateMetric(c1Col, c1M, c1Cond), c1M);
+            document.getElementById('card1Value').innerText = formatNumber(computeArrayMetric(c1Vals, c1M, c1Cond), c1M);
 
             // Cartão 2
             const c2Col = document.getElementById('card2Col').value;
             const c2M = document.getElementById('card2Measure').value;
             const c2Cond = document.getElementById('card2CondVal').value;
+            const c2Vals = rawData.map(r => r[c2Col]);
 
             if (c2M === 'count') {
                 document.getElementById('card2Title').innerText = `COUNT - ${c2Col}`;
@@ -980,12 +1056,13 @@
             } else {
                 document.getElementById('card2Title').innerText = `${c2M.toUpperCase()} - ${c2Col}`;
             }
-            document.getElementById('card2Value').innerText = formatNumber(calculateMetric(c2Col, c2M, c2Cond), c2M);
+            document.getElementById('card2Value').innerText = formatNumber(computeArrayMetric(c2Vals, c2M, c2Cond), c2M);
 
             // Cartão 3
             const c3Col = document.getElementById('card3Col').value;
             const c3M = document.getElementById('card3Measure').value;
             const c3Cond = document.getElementById('card3CondVal').value;
+            const c3Vals = rawData.map(r => r[c3Col]);
 
             if (c3M === 'count') {
                 document.getElementById('card3Title').innerText = `COUNT - ${c3Col}`;
@@ -994,7 +1071,7 @@
             } else {
                 document.getElementById('card3Title').innerText = `${c3M.toUpperCase()} - ${c3Col}`;
             }
-            document.getElementById('card3Value').innerText = formatNumber(calculateMetric(c3Col, c3M, c3Cond), c3M);
+            document.getElementById('card3Value').innerText = formatNumber(computeArrayMetric(c3Vals, c3M, c3Cond), c3M);
         }
 
         // --- CONFIGURAÇÃO DE DATALABELS EXTERNOS E ALTAMENTE LEGÍVEIS ---
@@ -1040,6 +1117,7 @@
             const dateCol = document.getElementById('trendDateCol').value;
             const groupType = document.getElementById('trendGroup').value;
             const measure = document.getElementById('trendMeasure').value;
+            const condVal = document.getElementById('trendCondVal') ? document.getElementById('trendCondVal').value : '';
             const showLabels = document.getElementById('trendShowLabels').checked;
 
             const selectedSeries = Array.from(document.querySelectorAll('#trendSeriesCheckboxes input:checked')).map(cb => cb.value);
@@ -1071,8 +1149,7 @@
 
                 selectedSeries.forEach(sCol => {
                     if (!groupedData[key][sCol]) groupedData[key][sCol] = [];
-                    const val = Number(String(row[sCol] || 0).replace(',', '.'));
-                    if (!isNaN(val)) groupedData[key][sCol].push(val);
+                    groupedData[key][sCol].push(row[sCol]);
                 });
             });
 
@@ -1081,16 +1158,13 @@
             const datasets = selectedSeries.map((sCol, colorIdx) => {
                 const dataPoints = labels.map(label => {
                     const vals = groupedData[label][sCol] || [];
-                    if (vals.length === 0) return 0;
-                    if (measure === 'sum') return vals.reduce((a, b) => a + b, 0);
-                    if (measure === 'avg') return vals.reduce((a, b) => a + b, 0) / vals.length;
-                    if (measure === 'min') return Math.min(...vals);
-                    if (measure === 'max') return Math.max(...vals);
-                    return 0;
+                    return computeArrayMetric(vals, measure, condVal);
                 });
 
+                const datasetLabel = measure === 'cont_if' ? `${sCol} (${condVal})` : sCol;
+
                 return {
-                    label: sCol,
+                    label: datasetLabel,
                     data: dataPoints,
                     borderColor: PALETTE[colorIdx % PALETTE.length],
                     backgroundColor: PALETTE[colorIdx % PALETTE.length] + '20',
@@ -1162,6 +1236,7 @@
             const pType = document.getElementById('punctualPeriodType').value;
             const pVal = document.getElementById('punctualPeriodValue').value;
             const measure = document.getElementById('punctualMeasure').value;
+            const condVal = document.getElementById('punctualCondVal') ? document.getElementById('punctualCondVal').value : '';
             const dateCol = document.getElementById('trendDateCol').value;
             const showLabels = document.getElementById('punctualShowLabels').checked;
 
@@ -1216,8 +1291,7 @@
 
                 selectedSeries.forEach(sCol => {
                     if (!groupedData[catKey][sCol]) groupedData[catKey][sCol] = [];
-                    const v = Number(String(row[sCol] || 0).replace(',', '.'));
-                    if (!isNaN(v)) groupedData[catKey][sCol].push(v);
+                    groupedData[catKey][sCol].push(row[sCol]);
                 });
             });
 
@@ -1226,16 +1300,13 @@
             const datasets = selectedSeries.map((sCol, colorIdx) => {
                 const dataPoints = labels.map(cat => {
                     const vals = groupedData[cat][sCol] || [];
-                    if (vals.length === 0) return 0;
-                    if (measure === 'sum') return vals.reduce((a, b) => a + b, 0);
-                    if (measure === 'avg') return vals.reduce((a, b) => a + b, 0) / vals.length;
-                    if (measure === 'min') return Math.min(...vals);
-                    if (measure === 'max') return Math.max(...vals);
-                    return 0;
+                    return computeArrayMetric(vals, measure, condVal);
                 });
 
+                const datasetLabel = measure === 'cont_if' ? `${sCol} (${condVal})` : sCol;
+
                 return {
-                    label: sCol,
+                    label: datasetLabel,
                     data: dataPoints,
                     backgroundColor: PALETTE[colorIdx % PALETTE.length]
                 };
@@ -1266,6 +1337,7 @@
             const chartType = document.getElementById('singleChartType').value;
             const periodVal = document.getElementById('singlePeriodValue').value;
             const measure = document.getElementById('singleMeasure').value;
+            const condVal = document.getElementById('singleCondVal') ? document.getElementById('singleCondVal').value : '';
             const dateCol = document.getElementById('trendDateCol').value;
             const showLabels = document.getElementById('singleShowLabels').checked;
 
@@ -1283,19 +1355,13 @@
             filteredRows.forEach(row => {
                 const catKey = String(row[catCol] || 'Não Identificado').trim();
                 if (!groupedData[catKey]) groupedData[catKey] = [];
-                const v = Number(String(row[seriesCol] || 0).replace(',', '.'));
-                if (!isNaN(v)) groupedData[catKey].push(v);
+                groupedData[catKey].push(row[seriesCol]);
             });
 
             const labels = Object.keys(groupedData);
             const dataPoints = labels.map(cat => {
-                const vals = groupedData[cat];
-                if (vals.length === 0) return 0;
-                if (measure === 'sum') return vals.reduce((a, b) => a + b, 0);
-                if (measure === 'avg') return vals.reduce((a, b) => a + b, 0) / vals.length;
-                if (measure === 'min') return Math.min(...vals);
-                if (measure === 'max') return Math.max(...vals);
-                return 0;
+                const vals = groupedData[cat] || [];
+                return computeArrayMetric(vals, measure, condVal);
             });
 
             let actualChartType = chartType;
@@ -1317,6 +1383,10 @@
                 ? '#ffffff' 
                 : PALETTE[0];
 
+            const datasetLabel = measure === 'cont_if' 
+                ? `CONT.SE (${condVal}) de ${seriesCol}` 
+                : `${measure.toUpperCase()} de ${seriesCol}`;
+
             if (singleChartInstance) singleChartInstance.destroy();
 
             const ctx = document.getElementById('singleChart').getContext('2d');
@@ -1325,7 +1395,7 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: `${measure.toUpperCase()} de ${seriesCol}`,
+                        label: datasetLabel,
                         data: dataPoints,
                         backgroundColor: bgColors,
                         borderColor: borderColors,
